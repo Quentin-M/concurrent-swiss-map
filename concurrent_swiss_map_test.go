@@ -53,12 +53,24 @@ func TestDelete(t *testing.T) {
 
 func TestSetIfAbsent(t *testing.T) {
 	myMap := csmap.New[int, string]()
-	ok := myMap.SetIfAbsent(1, "test")
+
+	value, ok := myMap.SetIfAbsent(1, "test")
 	if !ok {
 		t.Fatal("ok should be true")
 	}
+	if value != "test" {
+		t.Fatal("value should be test")
+	}
 	if !myMap.Has(1) {
 		t.Fatal("1 should be exist")
+	}
+
+	value, ok = myMap.SetIfAbsent(1, "foo")
+	if ok {
+		t.Fatal("ok should be false")
+	}
+	if value != "test" {
+		t.Fatal("value should be test")
 	}
 }
 
