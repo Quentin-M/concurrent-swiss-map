@@ -194,7 +194,7 @@ func (m *Map[K, V]) PutWithHash(key K, value V, hash uint64) {
 	}
 }
 
-func (m *Map[K, V]) DeleteWithHash(key K, hash uint64) (ok bool) {
+func (m *Map[K, V]) DeleteWithHash(key K, hash uint64) (value V, ok bool) {
 	hi, lo := splitHash(hash)
 	g := probeStart(hi, len(m.groups))
 	for {
@@ -217,6 +217,7 @@ func (m *Map[K, V]) DeleteWithHash(key K, hash uint64) (ok bool) {
 					m.ctrl[g][s] = tombstone
 					m.dead++
 				}
+				value = m.groups[g].values[s]
 				var k K
 				var v V
 				m.groups[g].keys[s] = k

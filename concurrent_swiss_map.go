@@ -102,7 +102,7 @@ func (m *CsMap[K, V]) Store(key K, value V) {
 	shard.Unlock()
 }
 
-func (m *CsMap[K, V]) Delete(key K) bool {
+func (m *CsMap[K, V]) Delete(key K) (V, bool) {
 	hashShardPair := m.getShard(key)
 	shard := hashShardPair.shard
 	shard.Lock()
@@ -110,7 +110,7 @@ func (m *CsMap[K, V]) Delete(key K) bool {
 	return shard.items.DeleteWithHash(key, hashShardPair.hash)
 }
 
-func (m *CsMap[K, V]) DeleteIf(key K, condition func(value V) bool) bool {
+func (m *CsMap[K, V]) DeleteIf(key K, condition func(value V) bool) (V, bool) {
 	hashShardPair := m.getShard(key)
 	shard := hashShardPair.shard
 	shard.Lock()
@@ -119,7 +119,7 @@ func (m *CsMap[K, V]) DeleteIf(key K, condition func(value V) bool) bool {
 	if ok && condition(value) {
 		return shard.items.DeleteWithHash(key, hashShardPair.hash)
 	}
-	return false
+	return *new(V), false
 }
 
 func (m *CsMap[K, V]) Load(key K) (V, bool) {

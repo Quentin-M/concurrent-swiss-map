@@ -32,8 +32,8 @@ func TestLoad(t *testing.T) {
 func TestDelete(t *testing.T) {
 	myMap := csmap.New[int, string]()
 	myMap.Store(1, "test")
-	ok1 := myMap.Delete(20)
-	ok2 := myMap.Delete(1)
+	v1, ok1 := myMap.Delete(20)
+	v2, ok2 := myMap.Delete(1)
 	if myMap.Has(1) {
 		t.Fatal("1 should be deleted")
 	}
@@ -42,6 +42,12 @@ func TestDelete(t *testing.T) {
 	}
 	if !ok2 {
 		t.Fatal("ok2 should be true")
+	}
+	if v1 != "" {
+		t.Fatal("v1 should be empty")
+	}
+	if v2 != "test" {
+		t.Fatal("v2 should be test")
 	}
 }
 
@@ -114,15 +120,18 @@ func TestSetIf(t *testing.T) {
 func TestDeleteIf(t *testing.T) {
 	myMap := csmap.New[int, string]()
 	myMap.Store(1, "value b")
-	ok1 := myMap.DeleteIf(20, func(value string) bool {
+	v1, ok1 := myMap.DeleteIf(20, func(value string) bool {
 		t.Fatal("condition function should not have been called")
 		return false
 	})
 	if ok1 {
 		t.Fatal("ok1 should be false")
 	}
+	if v1 != "" {
+		t.Fatal("v1 should be empty")
+	}
 
-	ok2 := myMap.DeleteIf(1, func(value string) bool {
+	v2, ok2 := myMap.DeleteIf(1, func(value string) bool {
 		if value != "value b" {
 			t.Fatal("condition function arg should be tests")
 		}
@@ -131,8 +140,11 @@ func TestDeleteIf(t *testing.T) {
 	if ok2 {
 		t.Fatal("ok1 should be false")
 	}
+	if v2 != "" {
+		t.Fatal("v2 should be empty")
+	}
 
-	ok3 := myMap.DeleteIf(1, func(value string) bool {
+	v3, ok3 := myMap.DeleteIf(1, func(value string) bool {
 		if value != "value b" {
 			t.Fatal("condition function arg should be tests")
 		}
@@ -140,6 +152,9 @@ func TestDeleteIf(t *testing.T) {
 	})
 	if !ok3 {
 		t.Fatal("ok2 should be true")
+	}
+	if v3 != "value b" {
+		t.Fatal("v3 should be value b")
 	}
 }
 
