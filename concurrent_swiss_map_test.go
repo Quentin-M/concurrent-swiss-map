@@ -47,7 +47,10 @@ func TestDelete(t *testing.T) {
 
 func TestSetIfAbsent(t *testing.T) {
 	myMap := csmap.New[int, string]()
-	myMap.SetIfAbsent(1, "test")
+	ok := myMap.SetIfAbsent(1, "test")
+	if !ok {
+		t.Fatal("ok should be true")
+	}
 	if !myMap.Has(1) {
 		t.Fatal("1 should be exist")
 	}
@@ -55,13 +58,19 @@ func TestSetIfAbsent(t *testing.T) {
 
 func TestSetIfPresent(t *testing.T) {
 	myMap := csmap.New[int, string]()
-	myMap.SetIfPresent(1, "test")
+	ok := myMap.SetIfPresent(1, "test")
+	if ok {
+		t.Fatal("ok should be false")
+	}
 	if myMap.Has(1) {
 		t.Fatal("1 should be not exist")
 	}
 
 	myMap.Store(1, "test")
-	myMap.SetIfPresent(1, "new-test")
+	ok = myMap.SetIfPresent(1, "new-test")
+	if !ok {
+		t.Fatal("ok should be true")
+	}
 	val, _ := myMap.Load(1)
 	if val != "new-test" {
 		t.Fatal("val should be new-test")
@@ -71,25 +80,31 @@ func TestSetIfPresent(t *testing.T) {
 func TestSetIf(t *testing.T) {
 	myMap := csmap.New[int, string]()
 	valueA := "value a"
-	myMap.SetIf(1, func(previousVale string, previousFound bool) (value string, set bool) {
+	ok := myMap.SetIf(1, func(previousVale string, previousFound bool) (value string, set bool) {
 		// operate like  a SetIfAbsent...
 		if !previousFound {
 			return valueA, true
 		}
 		return "", false
 	})
+	if !ok {
+		t.Fatal("ok should be true")
+	}
 	value, _ := myMap.Load(1)
 	if value != valueA {
 		t.Fatal("value should value a")
 	}
 
-	myMap.SetIf(1, func(previousVale string, previousFound bool) (value string, set bool) {
+	ok = myMap.SetIf(1, func(previousVale string, previousFound bool) (value string, set bool) {
 		// operate like  a SetIfAbsent...
 		if !previousFound {
 			return "bad", true
 		}
 		return "", false
 	})
+	if ok {
+		t.Fatal("ok should be false")
+	}
 	value, _ = myMap.Load(1)
 	if value != valueA {
 		t.Fatal("value should value a")

@@ -159,7 +159,7 @@ func (m *CsMap[K, V]) Count() int {
 	return count
 }
 
-func (m *CsMap[K, V]) SetIfAbsent(key K, value V) {
+func (m *CsMap[K, V]) SetIfAbsent(key K, value V) bool {
 	hashShardPair := m.getShard(key)
 	shard := hashShardPair.shard
 	shard.Lock()
@@ -168,29 +168,32 @@ func (m *CsMap[K, V]) SetIfAbsent(key K, value V) {
 		shard.items.PutWithHash(key, value, hashShardPair.hash)
 	}
 	shard.Unlock()
+	return !ok
 }
 
-func (m *CsMap[K, V]) SetIf(key K, conditionFn func(previousVale V, previousFound bool) (value V, set bool)) {
+func (m *CsMap[K, V]) SetIf(key K, conditionFn func(previousVale V, previousFound bool) (value V, set bool)) (ok bool) {
 	hashShardPair := m.getShard(key)
 	shard := hashShardPair.shard
 	shard.Lock()
 	value, found := shard.items.GetWithHash(key, hashShardPair.hash)
-	value, ok := conditionFn(value, found)
+	value, ok = conditionFn(value, found)
 	if ok {
 		shard.items.PutWithHash(key, value, hashShardPair.hash)
 	}
 	shard.Unlock()
+	return
 }
 
-func (m *CsMap[K, V]) SetIfPresent(key K, value V) {
+func (m *CsMap[K, V]) SetIfPresent(key K, value V) (ok bool) {
 	hashShardPair := m.getShard(key)
 	shard := hashShardPair.shard
 	shard.Lock()
-	_, ok := shard.items.GetWithHash(key, hashShardPair.hash)
+	_, ok = shard.items.GetWithHash(key, hashShardPair.hash)
 	if ok {
 		shard.items.PutWithHash(key, value, hashShardPair.hash)
 	}
 	shard.Unlock()
+	return
 }
 
 func (m *CsMap[K, V]) IsEmpty() bool {
